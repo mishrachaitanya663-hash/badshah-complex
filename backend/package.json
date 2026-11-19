@@ -1,0 +1,25 @@
+﻿{
+  "name": "badshah-customer-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "db:test": "node scripts/db-test.js",
+    "db:migrate:sqlite-to-postgres": "node scripts/migrate-sqlite-to-postgres.js",
+    "db:migrate:sqlite-to-postgres:dry": "node scripts/migrate-sqlite-to-postgres.js --dry-run",
+    "images:migrate:cloudinary": "node scripts/migrate-images-to-cloudinary.js"
+  },
+  "dependencies": {
+    "cloudinary": "^2.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "pg": "^8.20.0",
+    "zod": "^4.1.11"
+  }
+}
