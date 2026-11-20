@@ -14,8 +14,11 @@ function positiveNumber(name, fallback) {
   return value;
 }
 
-const dbDriver = (process.env.DB_DRIVER || (isProduction ? 'postgres' : 'sqlite')).toLowerCase();
-const databaseUrl = process.env.DATABASE_URL || '';
+const requestedDriver = (process.env.DB_DRIVER || 'mongo').toLowerCase();
+const dbDriver = requestedDriver === 'mongodb' ? 'mongo' : requestedDriver;
+const mongoUri = process.env.MONGODB_URI || '';
+const mongoDb = process.env.MONGODB_DB || 'badshah_custmer';
+const mongoTlsServerName = process.env.MONGODB_TLS_SERVERNAME || '';
 const corsOrigins = (process.env.CORS_ORIGINS || (isProduction ? '' : 'http://localhost:5175,http://localhost:5176'))
   .split(',')
   .map((origin) => origin.trim())
@@ -33,8 +36,8 @@ const adminPassword = process.env.ADMIN_PASSWORD || (isProduction ? '' : 'admin1
 
 if (isProduction) {
   const problems = [];
-  if (dbDriver !== 'postgres' && dbDriver !== 'postgresql') problems.push('DB_DRIVER must be postgres');
-  if (!databaseUrl) problems.push('DATABASE_URL is required');
+  if (dbDriver !== 'mongo') problems.push('DB_DRIVER must be mongo');
+  if (!mongoUri) problems.push('MONGODB_URI is required');
   if (!adminUsername) problems.push('ADMIN_USERNAME is required');
   if (!adminPassword) problems.push('ADMIN_PASSWORD is required');
   else if (adminPassword.length < 12) problems.push('ADMIN_PASSWORD must be at least 12 characters');
@@ -47,8 +50,9 @@ export const config = Object.freeze({
   root: backendRoot,
   port: positiveNumber('PORT', 4000),
   dbDriver,
-  databaseUrl,
-  sqliteFile: fromRoot(process.env.SQLITE_FILE || './data/badshah-customer.db'),
+  mongoUri,
+  mongoDb,
+  mongoTlsServerName,
   uploadDir: fromRoot(process.env.UPLOAD_DIR || './uploads'),
   maxImageBytes: positiveNumber('MAX_IMAGE_MB', 5) * 1024 * 1024,
   corsOrigins,

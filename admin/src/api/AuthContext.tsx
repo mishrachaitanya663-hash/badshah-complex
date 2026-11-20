@@ -17,6 +17,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const tokenMatch = window.location.hash.match(/(?:^#|&)token=([^&]+)/);
+    if (tokenMatch) {
+      setToken(decodeURIComponent(tokenMatch[1]));
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
     if (!getToken()) {
       setLoading(false);
       return;

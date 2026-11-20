@@ -2,8 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../src/config.js';
 import { initDb, closeCurrentDb, getDbKind } from '../src/db/index.js';
-import { getDb } from '../src/db/sqlite.js';
-import { query } from '../src/db/postgres.js';
+import { getCollection } from '../src/db/mongo.js';
 import { imageStorage } from '../src/storage/imageStorage.js';
 
 const dryRun = process.argv.includes('--dry-run');
@@ -27,6 +26,7 @@ if (!config.cloudinaryEnabled) {
 }
 
 function parseArray(value) {
+  if (Array.isArray(value)) return value;
   try {
     const parsed = JSON.parse(value || '[]');
     return Array.isArray(parsed) ? parsed : [];
@@ -42,27 +42,21 @@ function localFileName(url) {
 }
 
 async function fetchRows(table) {
-  if (getDbKind() === 'sqlite') return getDb().prepare(`SELECT * FROM ${table}`).all();
-  const { rows } = await query(`SELECT * FROM ${table}`);
-  return rows;
+  return getCollection(table).find({}).toArray();
 }
 
 async function updateProductRow(id, images, imagePublicIds) {
-  const values = [JSON.stringify(images), JSON.stringify(imagePublicIds), new Date().toISOString(), id];
-  if (getDbKind() === 'sqlite') {
-    getDb().prepare('UPDATE products SET images = ?, image_public_ids = ?, updated_at = ? WHERE id = ?').run(...values);
-  } else {
-    await query('UPDATE products SET images = $1, image_public_ids = $2, updated_at = $3 WHERE id = $4', values);
-  }
+  await getCollection('products').updateOne(
+    { id },
+    { $set: { images, image_public_ids: imagePublicIds, updated_at: new Date().toISOString() } },
+  );
 }
 
 async function updateImageRow(table, id, url, publicId) {
-  const values = [url, publicId, new Date().toISOString(), id];
-  if (getDbKind() === 'sqlite') {
-    getDb().prepare(`UPDATE ${table} SET image_url = ?, image_public_id = ?, updated_at = ? WHERE id = ?`).run(...values);
-  } else {
-    await query(`UPDATE ${table} SET image_url = $1, image_public_id = $2, updated_at = $3 WHERE id = $4`, values);
-  }
+  await getCollection(table).updateOne(
+    { id },
+    { $set: { image_url: url, image_public_id: publicId, updated_at: new Date().toISOString() } },
+  );
 }
 
 async function uploadLocal(name, folder) {

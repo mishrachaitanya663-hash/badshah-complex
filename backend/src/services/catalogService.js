@@ -402,7 +402,11 @@ export async function updateSubcategory(id, input) {
     patch.imagePublicId = normalizePublicId(patch.imagePublicId);
   }
 
-  return subcategoryRepository.update(id, patch);
+  const updated = await subcategoryRepository.update(id, patch);
+  if (patch.categoryId !== undefined && patch.categoryId !== existing.categoryId) {
+    await subcategoryRepository.syncProductCategory(id, patch.categoryId);
+  }
+  return updated;
 }
 
 export async function deleteSubcategory(id, options = {}) {

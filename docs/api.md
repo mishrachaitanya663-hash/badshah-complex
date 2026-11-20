@@ -6,7 +6,7 @@ Base URL: `http://localhost:4000` (proxied as `/api` by both frontends).
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/health` | Health check and active DB driver |
+| GET | `/api/health` | Health check and active DB driver (`mongo`) |
 | GET | `/api/categories` | Active categories with active product/subcategory counts |
 | GET | `/api/categories/:slug` | One active category |
 | GET | `/api/subcategories` | Active subcategories, optionally filtered by `category` or `q` |
@@ -43,7 +43,7 @@ All routes require `Authorization: Bearer <token>` from login. Missing/invalid s
 | POST | `/api/admin/products` | Create product with `categoryId` and `unit`; `subcategoryId` is optional (`null` for category-only products) |
 | GET | `/api/admin/products/:id` | Product by id |
 | PATCH | `/api/admin/products/:id` | Partial update (name, brand, price, costPaise, stock, unit, category, subcategory, active, starPriority, images…) |
-| DELETE | `/api/admin/products/:id` | Delete product and its local image files |
+| DELETE | `/api/admin/products/:id` | Delete product and its stored images |
 | POST | `/api/admin/products/:id/images` | Multipart field `images`, up to 8 files |
 | DELETE | `/api/admin/products/:id/images/:index` | Remove one image |
 | POST | `/api/admin/categories/images` | Multipart field `image`, one file → `{ url }` |
@@ -60,6 +60,6 @@ All routes require `Authorization: Bearer <token>` from login. Missing/invalid s
 
 Category and subcategory deletion never deletes products. If a category or subcategory still has content, pass `moveTo=<destinationId>`; otherwise the API returns 409 with a clear message.
 
-Image uploads accept JPEG, PNG, WebP and GIF. The admin UI uses the native file picker so Android/iPhone users can choose camera or gallery; it previews, validates and compresses large photos before upload. Files are stored in `backend/uploads/` and their URLs are saved in the database.
+Image uploads accept JPEG, PNG, WebP and GIF. The admin UI uses the native file picker so Android/iPhone users can choose camera or gallery; it previews, validates and compresses large photos before upload. Files are stored in Cloudinary when configured, with `backend/uploads/` used only as a development fallback; the URL and Cloudinary public ID are saved in the database.
 
 Validation errors: `{ "error": "Validation failed", "issues": [{ "field", "message" }] }`.

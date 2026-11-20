@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import { CUSTOMER_URL } from '../config';
 import Icon from '../components/Icon';
 
 export default function AdminLayout() {
@@ -67,7 +68,7 @@ export default function AdminLayout() {
           </NavLink>
 
           <p className="side-group">Shortcuts</p>
-          <a className="side-link" href="/">
+          <a className="side-link" href={CUSTOMER_URL}>
             <Icon name="external" />
             <span>Customer site</span>
           </a>

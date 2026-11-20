@@ -1,8 +1,3 @@
-databases:
-  - name: badshah-db
-    plan: free
-    databaseName: badshah_complex
-
 services:
   - type: web
     name: badshah-api
@@ -13,16 +8,16 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: NODE_VERSION
         value: 22.12.0
       - key: DB_DRIVER
-        value: postgres
-      - key: DATABASE_URL
-        fromDatabase:
-          name: badshah-db
-          property: connectionString
-      - key: PGSSLMODE
-        value: require
+        value: mongo
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: badshah_custmer
       - key: CORS_ORIGINS
         value: https://badshah-customer.onrender.com,https://badshah-admin.onrender.com
       - key: ADMIN_USERNAME
@@ -55,7 +50,7 @@ services:
       - key: VITE_API_BASE
         value: https://badshah-api.onrender.com
       - key: VITE_ADMIN_URL
-        value: https://badshah-admin.onrender.com/admin/
+        value: https://badshah-admin.onrender.com/
 
   - type: web
     name: badshah-admin
@@ -69,3 +64,5 @@ services:
         value: 22.12.0
       - key: VITE_API_BASE
         value: https://badshah-api.onrender.com
+      - key: VITE_CUSTOMER_URL
+        value: https://badshah-customer.onrender.com/

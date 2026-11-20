@@ -3,21 +3,21 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'badshah-api-test-'));
-process.env.DB_DRIVER = 'sqlite';
-process.env.SQLITE_FILE = path.join(tempDir, 'test.db');
+process.env.DB_DRIVER = 'mongo';
 process.env.UPLOAD_DIR = path.join(tempDir, 'uploads');
 process.env.ADMIN_USERNAME = 'admin';
 process.env.ADMIN_PASSWORD = 'test-password';
 process.env.CORS_ORIGINS = 'http://localhost:5175,http://localhost:5176';
-delete process.env.DATABASE_URL;
 process.env.CLOUDINARY_CLOUD_NAME = '';
 process.env.CLOUDINARY_API_KEY = '';
 process.env.CLOUDINARY_API_SECRET = '';
 
 let server;
 let base;
+let mongoServer;
 let closeCurrentDb;
 let categoryId;
 let subcategoryId;
@@ -44,6 +44,9 @@ async function api(requestPath, { method = 'GET', token: bearer, body, form } = 
 }
 
 before(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  process.env.MONGODB_URI = mongoServer.getUri('badshah-api-test');
+  process.env.MONGODB_DB = 'badshah-api-test';
   const { initDb, closeCurrentDb: closeDb } = await import('../src/db/index.js');
   closeCurrentDb = closeDb;
   await initDb();
@@ -56,6 +59,7 @@ before(async () => {
 after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
   if (closeCurrentDb) await closeCurrentDb();
+  if (mongoServer) await mongoServer.stop();
   fs.rmSync(tempDir, { recursive: true, force: true });
 });
 
@@ -63,7 +67,7 @@ test('health endpoint is public', async () => {
   const response = await api('/api/health');
   assert.equal(response.status, 200);
   assert.equal(response.body.ok, true);
-  assert.equal(response.body.driver, 'sqlite');
+  assert.equal(response.body.driver, 'mongo');
   assert.equal(response.body.database, 'connected');
 });
 
@@ -212,6 +216,10 @@ test('catalog flow: category, subcategory, product, filters, images and validati
   assert.equal(inStock.body.items.length, 1);
   assert.equal(inStock.body.items[0].name, 'Low priority');
 
+  const outOfStock = await api('/api/products?inStock=false');
+  assert.equal(outOfStock.body.items.length, 1);
+  assert.equal(outOfStock.body.items[0].name, 'High priority');
+
   const filtered = await api('/api/products?category=cement&subcategory=ppc-cement');
   assert.equal(filtered.body.total, 2);
 
@@ -291,6 +299,21 @@ test('catalog flow: category, subcategory, product, filters, images and validati
     body: { name: 'Moved', slug: 'moved', displayOrder: 5 },
   });
   assert.equal(destination.status, 201);
+
+  const recategorized = await api(`/api/admin/subcategories/${subcategoryId}`, {
+    method: 'PATCH',
+    ...auth(),
+    body: { categoryId: destination.body.id },
+  });
+  assert.equal(recategorized.status, 200);
+  const recategorizedProduct = await api(`/api/admin/products/${productId}`, auth());
+  assert.equal(recategorizedProduct.body.categoryId, destination.body.id);
+  const restored = await api(`/api/admin/subcategories/${subcategoryId}`, {
+    method: 'PATCH',
+    ...auth(),
+    body: { categoryId },
+  });
+  assert.equal(restored.status, 200);
 
   const movedDelete = await api(`/api/admin/categories/${categoryId}?moveTo=${destination.body.id}`, {
     method: 'DELETE',

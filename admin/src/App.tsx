@@ -9,8 +9,10 @@ import { SubcategoriesPage as Subcategories } from './pages/Subcategories';
 import NotFound from './pages/NotFound';
 
 export default function App() {
+  const basename = window.location.pathname.startsWith('/admin') ? '/admin' : '/';
+
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <Routes>
           <Route element={<ProtectedRoute />}>

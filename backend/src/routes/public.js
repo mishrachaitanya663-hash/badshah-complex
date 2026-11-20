@@ -19,7 +19,7 @@ router.get('/health', asyncHandler(async (req, res) => {
   res.status(status).json({
     ok: dbOk,
     service: 'badshah-customer-api',
-    driver: config.dbDriver === 'postgresql' ? 'postgres' : config.dbDriver,
+    driver: config.dbDriver,
     database: dbOk ? 'connected' : 'error',
   });
 }));

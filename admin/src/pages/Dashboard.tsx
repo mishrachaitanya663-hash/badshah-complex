@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
+import { CUSTOMER_URL } from '../config';
 import type { Product, Stats } from '../types';
 import { ErrorNote, Loading } from '../components/States';
 import Icon from '../components/Icon';
@@ -49,7 +50,7 @@ export default function Dashboard() {
           <p className="muted">A live snapshot of your catalogue and inventory.</p>
         </div>
         <div className="dash-actions">
-          <a className="button ghost" href="/">
+          <a className="button ghost" href={CUSTOMER_URL}>
             <Icon name="external" size={16} />
             View store
           </a>
@@ -192,7 +193,7 @@ export default function Dashboard() {
           <span><strong>Organise categories</strong><small>Keep browsing tidy and simple.</small></span>
           <Icon name="chevron" size={16} />
         </Link>
-        <a className="quick-card" href="/">
+        <a className="quick-card" href={CUSTOMER_URL}>
           <Icon name="external" />
           <span><strong>Open customer site</strong><small>See exactly what shoppers see.</small></span>
           <Icon name="chevron" size={16} />

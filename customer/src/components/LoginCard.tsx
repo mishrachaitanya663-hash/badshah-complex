@@ -37,7 +37,8 @@ export default function LoginCard({ onClose }: Props) {
       if (!response.ok || !data?.token) throw new Error(data?.error || 'Login failed');
 
       localStorage.setItem('badshah_admin_token', data.token);
-      window.location.assign(ADMIN_URL);
+      const separator = ADMIN_URL.includes('#') ? '&' : '#';
+      window.location.assign(`${ADMIN_URL}${separator}token=${encodeURIComponent(data.token)}`);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Login failed');
       setBusy(false);

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -23,14 +24,21 @@ const MIME: Record<string, string> = {
 const adminPanel: Plugin = {
   name: 'badshah-admin-panel',
   configureServer(server) {
-    server.middlewares.use('/admin', (req, res, next) => {
+    const serve = (
+      req: IncomingMessage,
+      res: ServerResponse,
+      next: () => void,
+      baseDir: string,
+      fallbackToIndex: boolean,
+    ) => {
       const request = req as { url?: string };
       const urlPath = decodeURIComponent((request.url || '/').split('?')[0]);
       const relative = path.normalize(urlPath).replace(/^([/\\]|\.\.[/\\])+/, '');
-      let filePath = path.join(adminDist, relative);
+      let filePath = path.join(baseDir, relative);
 
-      if (!filePath.startsWith(adminDist)) return next();
+      if (!filePath.startsWith(baseDir)) return next();
       if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+        if (!fallbackToIndex) return next();
         filePath = path.join(adminDist, 'index.html');
       }
       if (!fs.existsSync(filePath)) return next();
@@ -38,7 +46,10 @@ const adminPanel: Plugin = {
       res.statusCode = 200;
       res.setHeader('Content-Type', MIME[path.extname(filePath)] || 'application/octet-stream');
       return fs.createReadStream(filePath).pipe(res);
-    });
+    };
+
+    server.middlewares.use('/admin', (req, res, next) => serve(req, res, next, adminDist, true));
+    server.middlewares.use('/assets', (req, res, next) => serve(req, res, next, path.join(adminDist, 'assets'), false));
   },
 };
 

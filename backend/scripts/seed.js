@@ -39,13 +39,12 @@ async function main() {
     console.log(`[seed] DB connected (${getDbKind()})`);
 
     await ensureAdmin();
-    if (getDbKind() === 'sqlite') {
-      const { getDb } = await import('../src/db/sqlite.js');
-      getDb().exec('DELETE FROM products; DELETE FROM subcategories; DELETE FROM categories;');
-    } else {
-      const { query } = await import('../src/db/postgres.js');
-      await query('TRUNCATE TABLE products, subcategories, categories RESTART IDENTITY CASCADE');
-    }
+    const { getCollection } = await import('../src/db/mongo.js');
+    await Promise.all([
+      getCollection('products').deleteMany({}),
+      getCollection('subcategories').deleteMany({}),
+      getCollection('categories').deleteMany({}),
+    ]);
 
     let subcategoryTotal = 0;
     for (const [categoryIndex, entry] of catalogue.entries()) {

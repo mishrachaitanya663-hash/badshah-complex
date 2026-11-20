@@ -1,13 +1,13 @@
 # Badshah Complex — Customer Website (local build)
 
-Two separate React + TypeScript panels on one Express/SQLite backend:
+Two separate React + TypeScript panels on one Express/MongoDB backend:
 
 - **Customer panel** — public, read-only storefront at `http://localhost:5175/`
 - **Admin panel** — private dashboard at `http://localhost:5175/admin` (login required)
 
 Open the customer site first; click **Login** in its header. A login card opens on the same page, and a successful sign-in takes you to the admin dashboard. There is no separate login page.
 
-> No MongoDB Atlas. Production uses PostgreSQL, Cloudinary and Node 22+. The existing Badshah Complex Retailer/Admin application is untouched.
+> MongoDB is the only database driver. Production uses MongoDB Atlas (or any hosted MongoDB), Cloudinary and Node 22+. The existing Badshah Complex Retailer/Admin application is untouched.
 
 ## Ports / URLs
 
@@ -16,23 +16,33 @@ Open the customer site first; click **Login** in its header. A login card opens 
 | Customer site | http://localhost:5175/ | Root opens the customer home page |
 | Admin site | http://localhost:5175/admin | Served from `admin/dist` by the customer dev server |
 | Backend API | http://localhost:4000 | Proxied via `/api` and `/uploads` on port 5175 |
+| Local MongoDB | mongodb://127.0.0.1:27017 | Started by `npm run db:local`; data persists in `backend/data/mongo/` |
 
 Port 5173 is left alone because another local project already uses it.
 
-## Run locally (2 terminals)
+## Run locally (3 terminals)
 
-Terminal 1 — backend:
+Terminal 1 — local MongoDB (free, no account needed):
 
 ```powershell
 cd "C:\Users\Chaitanya\OneDrive\Desktop\badshah complex\backend"
 npm install
-npm run seed
+npm run db:local
+```
+
+Leave this terminal running. It starts a real `mongod` on port 27017 and stores data under `backend/data/mongo/`. To use MongoDB Atlas instead, set `MONGODB_URI` and `MONGODB_DB` in `backend/.env` and skip this terminal.
+
+Terminal 2 — backend:
+
+```powershell
+cd "C:\Users\Chaitanya\OneDrive\Desktop\badshah complex\backend"
+npm install
 npm run dev
 ```
 
-`npm run seed` resets the catalogue to exactly five main categories and their subcategories. It does not create fake products, prices, brands or stock; add real products from the admin panel.
+On a fresh database, run `npm run seed` once to create exactly five main categories and their subcategories. It deletes all products, prices, brands and stock, so do not run it after importing existing data. To import the old SQLite catalogue instead, run `npm run db:migrate:sqlite-to-mongo -- --dry-run` and then `npm run db:migrate:sqlite-to-mongo`. Run `npm run db:verify` to check the connection, database name, collection reads and temporary-document CRUD; it never prints credentials or changes real data.
 
-Terminal 2 — customer + admin pages:
+Terminal 3 — customer + admin pages:
 
 ```powershell
 cd "C:\Users\Chaitanya\OneDrive\Desktop\badshah complex\customer"
@@ -88,10 +98,10 @@ cd admin;    npm run build
 
 ## Local details
 
-- Database: `backend/data/badshah-customer.db` (gitignored).
+- Database: MongoDB collections `admins`, `admin_sessions`, `categories`, `subcategories` and `products` in the database named by `MONGODB_DB`. Local dev data lives in `backend/data/mongo/` (gitignored); hosted dev/prod uses the URI in `MONGODB_URI`.
 - Images: `backend/uploads/` (gitignored), served at `/uploads/...`.
 - `backend/.env.example` is the config template; `.env` is gitignored.
-- See `docs/migration-to-mongodb.md` for the later MongoDB switch. The Atlas URI shared earlier is unused.
+- See `docs/migration-to-mongodb.md` to import the old SQLite catalogue with `npm run db:migrate:sqlite-to-mongo`.
 
 ## Production images (Cloudinary)
 
@@ -109,16 +119,9 @@ Add `--delete-local` only after checking the results. Without Cloudinary credent
 
 ## Deployment layout
 
-- API + PostgreSQL: Render (blueprint in `render.yaml`).
-- Customer + admin: separate Vercel projects using `customer/vercel.json` and `admin/vercel.json`.
-- Node version: `22.12.0` (`.nvmrc` and `engines` in every package).
+- API, customer and admin: Render blueprint in `render.yaml`, with MongoDB Atlas as the external database.
+- Customer: `https://badshah-customer.onrender.com/`
+- Admin: `https://badshah-admin.onrender.com/` (served at the site root)
+- Node version: `22.12.0` (root `.nvmrc` and `engines` in every package).
 
-Set these Vercel project environment variables:
-
-| Project | Variable | Value |
-| --- | --- | --- |
-| customer | `VITE_API_BASE` | Your Render API URL, e.g. `https://badshah-api.onrender.com` |
-| customer | `VITE_ADMIN_URL` | Your admin Vercel URL ending in `/admin/` |
-| admin | `VITE_API_BASE` | Your Render API URL |
-
-Set these Render API environment variables in the dashboard (never in git): `DATABASE_URL`, `ADMIN_PASSWORD`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, and `CORS_ORIGINS` containing the exact customer/admin Vercel origins. The configured admin username/password are applied on every API start; rotate them in the host environment after deployment.
+The blueprint sets `VITE_API_BASE`, `VITE_ADMIN_URL`, `VITE_CUSTOMER_URL`, `CORS_ORIGINS` and `NODE_ENV=production`. Set these Render API secrets in the dashboard (never in git): `MONGODB_URI`, `ADMIN_PASSWORD`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`. The configured admin username/password are applied on every API start; rotate them in the host environment after deployment.

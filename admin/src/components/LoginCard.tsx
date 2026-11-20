@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../api/AuthContext';
+import { CUSTOMER_URL } from '../config';
 import { ErrorNote } from '../components/States';
 import Icon from '../components/Icon';
 
@@ -67,7 +68,7 @@ export default function LoginCard() {
         </button>
         <p className="login-hint">Use the credentials configured for your local admin account.</p>
       </form>
-      <a className="login-back" href="/">
+      <a className="login-back" href={CUSTOMER_URL}>
         <Icon name="arrow" size={14} /> Back to customer site
       </a>
     </div>
