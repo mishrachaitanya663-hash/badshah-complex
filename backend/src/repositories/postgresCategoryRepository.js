@@ -17,6 +17,13 @@ const SELECT = `
   FROM categories c
 `;
 
+const ADMIN_SELECT = `
+  SELECT c.*,
+    (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) AS product_count,
+    (SELECT COUNT(*) FROM subcategories s WHERE s.category_id = c.id) AS subcategory_count
+  FROM categories c
+`;
+
 function toInt(value, fallback = 0) {
   const n = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -47,7 +54,7 @@ function serialize(field, value) {
 }
 
 export async function listCategories({ includeInactive = false } = {}) {
-  const sql = `${SELECT}${includeInactive ? '' : ' WHERE c.active = 1'} ORDER BY c.display_order ASC, LOWER(c.name) ASC`;
+  const sql = `${includeInactive ? ADMIN_SELECT : SELECT}${includeInactive ? '' : ' WHERE c.active = 1'} ORDER BY c.display_order ASC, LOWER(c.name) ASC`;
   const { rows } = await query(sql);
   return rows.map(toCategory);
 }

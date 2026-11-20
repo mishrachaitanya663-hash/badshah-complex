@@ -1006,6 +1006,24 @@ button {
   color: var(--muted);
 }
 
+.check-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.check-field input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--admin);
+}
+
 .dropzone {
   display: flex;
   flex-direction: column;
@@ -1419,6 +1437,8 @@ code {
   .drawer-head, .drawer-body, .drawer-foot { padding: var(--space-4); }
   .toast { left: var(--space-4); right: var(--space-4); }
   .sample-picker { grid-template-columns: repeat(3, 1fr); }
+  .drawer-foot { flex-direction: column; }
+  .drawer-foot .button { width: 100%; }
 }
 
 .input-with-action {
@@ -1612,3 +1632,26 @@ code {
   color: var(--muted);
   font-size: 0.75rem;
 }
+
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .stepper button,
+  .segmented button,
+  .drawer-foot .button,
+  .icon-button,
+  button {
+    min-height: 44px;
+  }
+
+  .check-field input {
+    width: 24px;
+    height: 24px;
+  }
+}
+

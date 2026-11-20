@@ -9,12 +9,11 @@ const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, ne
 
 router.get('/health', asyncHandler(async (req, res) => {
   let dbOk = false;
-  let dbError;
   try {
     const { testDbConnection } = await import('../db/index.js');
     dbOk = await testDbConnection();
   } catch (error) {
-    dbError = error?.message;
+    console.error('[health] Database check failed:', error);
   }
   const status = dbOk ? 200 : 503;
   res.status(status).json({
@@ -22,7 +21,6 @@ router.get('/health', asyncHandler(async (req, res) => {
     service: 'badshah-customer-api',
     driver: config.dbDriver === 'postgresql' ? 'postgres' : config.dbDriver,
     database: dbOk ? 'connected' : 'error',
-    ...(dbError ? { error: dbError } : {}),
   });
 }));
 

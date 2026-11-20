@@ -14,7 +14,7 @@ Base URL: `http://localhost:4000` (proxied as `/api` by both frontends).
 | GET | `/api/products` | Active products with filters and pagination |
 | GET | `/api/products/:slug` | One active product |
 
-Product filters: `category`, `subcategory`, `q`, `minPrice`, `maxPrice`, `inStock=true`, `sort=priority|newest|price-asc|price-desc|name`, `page`, `limit` (max 60).
+Product filters: `category`, `subcategory`, `q`, `minPrice`, `maxPrice`, `inStock=true`, `sort=priority|newest|price-asc|price-desc|name`, `page`, `limit` (max 500).
 
 Category DTO: `id`, `name`, `slug`, `description`, `imageUrl`, `displayOrder`, `active`, `productCount`, `subcategoryCount`, `createdAt`, `updatedAt`.
 
@@ -40,7 +40,7 @@ All routes require `Authorization: Bearer <token>` from login. Missing/invalid s
 | --- | --- | --- |
 | GET | `/api/admin/stats` | Dashboard totals (products, categories, subcategories, stock, active/inactive, out of stock) |
 | GET | `/api/admin/products` | Products including inactive; supports category/subcategory filters |
-| POST | `/api/admin/products` | Create product with `categoryId`, `subcategoryId` and `unit` |
+| POST | `/api/admin/products` | Create product with `categoryId` and `unit`; `subcategoryId` is optional (`null` for category-only products) |
 | GET | `/api/admin/products/:id` | Product by id |
 | PATCH | `/api/admin/products/:id` | Partial update (name, brand, price, costPaise, stock, unit, category, subcategory, active, starPriority, images…) |
 | DELETE | `/api/admin/products/:id` | Delete product and its local image files |

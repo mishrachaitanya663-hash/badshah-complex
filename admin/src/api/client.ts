@@ -9,6 +9,11 @@ import type {
 } from '../types';
 
 const TOKEN_KEY = 'badshah_admin_token';
+export const TOKEN_CHANGED_EVENT = 'badshah-token-changed';
+
+function notifyTokenChange(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(TOKEN_CHANGED_EVENT));
+}
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -16,10 +21,12 @@ export function getToken(): string | null {
 
 export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
+  notifyTokenChange();
 }
 
 export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
+  notifyTokenChange();
 }
 
 type RequestOptions = {
@@ -98,11 +105,11 @@ export type ProductInput = {
   stock: number;
   unit: string;
   categoryId: string;
-  subcategoryId: string;
+  subcategoryId: string | null;
   active: boolean;
   starPriority: number;
   images: string[];
-  imagePublicIds?: string[];
+  imagePublicIds?: (string | null)[];
 };
 
 export type CategoryInput = {

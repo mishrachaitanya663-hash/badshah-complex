@@ -30,6 +30,11 @@ export async function createAdmin(data) {
   return findAdminById(data.id);
 }
 
+export async function updateAdminPassword(id, passwordHash) {
+  getDb().prepare('UPDATE admins SET password_hash = ? WHERE id = ?').run(passwordHash, id);
+  return findAdminById(id);
+}
+
 export async function createSession(data) {
   getDb()
     .prepare('INSERT INTO admin_sessions (token_hash, admin_id, expires_at, created_at) VALUES (?, ?, ?, ?)')

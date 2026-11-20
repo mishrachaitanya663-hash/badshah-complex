@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Icon from './Icon';
-import { ADMIN_URL } from '../config';
+import { ADMIN_URL, API_BASE } from '../config';
 
 type Props = {
   onClose: () => void;
@@ -15,7 +15,7 @@ export default function LoginCard({ onClose }: Props) {
   const firstField = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    firstField.current?.focus();
+    if (window.matchMedia('(pointer: fine)').matches) firstField.current?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose();
     }
@@ -28,7 +28,7 @@ export default function LoginCard({ onClose }: Props) {
     setError('');
     setBusy(true);
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
@@ -66,6 +66,10 @@ export default function LoginCard({ onClose }: Props) {
             ref={firstField}
             required
             autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
@@ -76,6 +80,10 @@ export default function LoginCard({ onClose }: Props) {
             required
             type="password"
             autoComplete="current-password"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="go"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />

@@ -7,7 +7,7 @@ Two separate React + TypeScript panels on one Express/SQLite backend:
 
 Open the customer site first; click **Login** in its header. A login card opens on the same page, and a successful sign-in takes you to the admin dashboard. There is no separate login page.
 
-> No MongoDB Atlas. No cloud deployment. The existing Badshah Complex Retailer/Admin application is untouched.
+> No MongoDB Atlas. Production uses PostgreSQL, Cloudinary and Node 22+. The existing Badshah Complex Retailer/Admin application is untouched.
 
 ## Ports / URLs
 
@@ -44,7 +44,7 @@ Now open:
 
 1. http://localhost:5175/ → customer site
 2. Click **Login** in the header (or open http://localhost:5175/admin)
-3. Sign in with `admin` / `admin123` (or the values in `backend/.env`) in the card; you land on the dashboard.
+3. Sign in with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values from `backend/.env`. Those values are applied to the admin account on every backend start, so the configured login always works.
 
 ## Admin source changes
 
@@ -68,15 +68,15 @@ Exactly five main categories are seeded:
 4. Doors & Windows — Wooden Doors, Steel Doors, Door Frames, Windows
 5. Bricks & Blocks — Red Bricks, Fly Ash Bricks, Concrete Blocks, Cement Blocks
 
-Category, subcategory and product are separate entities. A product belongs to one subcategory; a subcategory belongs to one main category.
+Category, subcategory and product are separate entities. A product belongs to exactly one category; a subcategory is optional and belongs to one main category. Leave subcategory blank to show a product directly under its category.
 
 ## Panels
 
-**Admin** (`/admin`): dashboard totals, category CRUD, subcategory CRUD and product CRUD. Images use the native camera/gallery picker with up to 8 product photos, previews, retake/replace/remove, validation and compression. Products include name, brand, description, price, unit, stock, category, subcategory, Active/Inactive and star priority 0–3. Deleting a category or subcategory with content asks for a safe destination and moves products instead of deleting them.
+**Admin** (`/admin`): dashboard totals, category CRUD, subcategory CRUD and product CRUD. Images use the native camera/gallery picker with up to 8 product photos, previews, retake/replace/remove, validation and compression. Products include name, brand, description, price, unit, stock, category, optional subcategory, Active/Inactive and star priority 0–3. Deleting a category or subcategory with content asks for a safe destination and moves products instead of deleting them.
 
-**Customer** (`/`): hero, category grid, subcategory browsing, product detail, search, category/subcategory/in-stock/price filters, price and availability, priority/price sorting. Categories and products are never mixed; only active products are shown under their correct subcategory.
+**Customer** (`/`): hero, category grid, subcategory browsing, product detail, search, category/subcategory/in-stock/price filters, price and availability, priority/price sorting. Categories and products are never mixed; only active products are shown under their correct category, with optional subcategory narrowing.
 
-Admin writes are reflected on the customer panel immediately because both use the same SQLite database and services.
+Admin writes are reflected on the customer panel immediately because both use the same database and services.
 
 ## Verification
 
@@ -106,3 +106,19 @@ npm run images:migrate:cloudinary
 ```
 
 Add `--delete-local` only after checking the results. Without Cloudinary credentials the app keeps using local `backend/uploads/`.
+
+## Deployment layout
+
+- API + PostgreSQL: Render (blueprint in `render.yaml`).
+- Customer + admin: separate Vercel projects using `customer/vercel.json` and `admin/vercel.json`.
+- Node version: `22.12.0` (`.nvmrc` and `engines` in every package).
+
+Set these Vercel project environment variables:
+
+| Project | Variable | Value |
+| --- | --- | --- |
+| customer | `VITE_API_BASE` | Your Render API URL, e.g. `https://badshah-api.onrender.com` |
+| customer | `VITE_ADMIN_URL` | Your admin Vercel URL ending in `/admin/` |
+| admin | `VITE_API_BASE` | Your Render API URL |
+
+Set these Render API environment variables in the dashboard (never in git): `DATABASE_URL`, `ADMIN_PASSWORD`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, and `CORS_ORIGINS` containing the exact customer/admin Vercel origins. The configured admin username/password are applied on every API start; rotate them in the host environment after deployment.

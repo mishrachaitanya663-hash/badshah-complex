@@ -5,6 +5,7 @@ import type { Category } from '../types';
 import { ConfirmDialog, ErrorNote, Loading, Toast } from '../components/States';
 import Icon from '../components/Icon';
 import ImagePicker, { type PendingImage } from '../components/ImagePicker';
+import { newId } from '../utils';
 
 type CategoryForm = {
   id: string;
@@ -18,7 +19,7 @@ type CategoryForm = {
 };
 
 const emptyForm: CategoryForm = {
-  id: crypto.randomUUID(),
+  id: '',
   name: '',
   slug: '',
   description: '',
@@ -82,7 +83,7 @@ export default function Categories() {
 
   function openCreate() {
     setEditingId(null);
-    setForm({ ...emptyForm, id: crypto.randomUUID() });
+    setForm({ ...emptyForm, id: newId() });
     setPendingImages([]);
     setSlugTouched(false);
     setDrawerOpen(true);
@@ -240,7 +241,7 @@ export default function Categories() {
                   <td>{category.productCount}</td>
                   <td>{category.displayOrder}</td>
                   <td>
-                    <span className={category.active ? 'status-pill in' : 'status-pill out'}>
+                    <span className={category.active ? 'status-pill good' : 'status-pill bad'}>
                       {category.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -270,7 +271,7 @@ export default function Categories() {
       {drawerOpen && (
         <div className="drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && closeDrawer()}>
           <aside className="editor-drawer" role="dialog" aria-modal="true" aria-label={editingId ? 'Edit category' : 'Add category'}>
-            <div className="drawer-header">
+            <div className="drawer-head">
               <div>
                 <h2>{editingId ? 'Edit category' : 'New category'}</h2>
                 <p className="muted">Only active categories are shown to customers.</p>
@@ -280,21 +281,25 @@ export default function Categories() {
               </button>
             </div>
 
-            <form className="drawer-form" onSubmit={submit}>
+            <form className="drawer-body" id="category-form" onSubmit={submit}>
               {!editingId && (
                 <label className="field">
                   <span>Category ID (UUID)</span>
-                  <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} required />
+                  <input value={form.id} enterKeyHint="next" autoCapitalize="none" autoCorrect="off" spellCheck={false} onChange={(event) => setForm({ ...form, id: event.target.value })} required />
                 </label>
               )}
               <label className="field">
                 <span>Name</span>
-                <input value={form.name} onChange={(event) => changeName(event.target.value)} required />
+                <input value={form.name} enterKeyHint="next" onChange={(event) => changeName(event.target.value)} required />
               </label>
               <label className="field">
                 <span>Slug</span>
                 <input
                   value={form.slug}
+                  enterKeyHint="next"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   onChange={(event) => {
                     setSlugTouched(true);
                     setForm({ ...form, slug: slugify(event.target.value) });
@@ -310,6 +315,8 @@ export default function Categories() {
                 <span>Display order</span>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  enterKeyHint="done"
                   min={0}
                   value={form.displayOrder}
                   onChange={(event) => setForm({ ...form, displayOrder: Number(event.target.value) })}
@@ -332,14 +339,14 @@ export default function Categories() {
                 <input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} />
                 <span>Active (visible to customers)</span>
               </label>
-
-              <div className="drawer-footer">
-                <button className="button ghost" type="button" onClick={closeDrawer}>Cancel</button>
-                <button className="button primary" type="submit" disabled={saving}>
-                  {saving ? 'Saving.' : editingId ? 'Save changes' : 'Create category'}
-                </button>
-              </div>
             </form>
+
+            <div className="drawer-foot">
+              <button className="button ghost" type="button" onClick={closeDrawer}>Cancel</button>
+              <button className="button primary" type="submit" form="category-form" disabled={saving}>
+                {saving ? 'Saving.' : editingId ? 'Save changes' : 'Create category'}
+              </button>
+            </div>
           </aside>
         </div>
       )}
@@ -353,6 +360,7 @@ export default function Categories() {
               : `"${deleteTarget.name}" will be removed. This cannot be undone.`
           }
           confirmLabel="Delete category"
+          confirmDisabled={(deleteTarget.productCount > 0 || deleteTarget.subcategoryCount > 0) && !moveTarget}
           onConfirm={confirmDelete}
           onCancel={() => setDeleteTarget(null)}
         >

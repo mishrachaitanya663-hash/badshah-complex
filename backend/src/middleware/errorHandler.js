@@ -13,6 +13,9 @@ export function errorHandler(error, req, res, next) {
   }
 
   const status = error.status || (error.message?.includes('Only jpeg') ? 400 : 500);
-  if (status >= 500) console.error(error);
-  return res.status(status).json({ error: error.message || 'Internal server error' });
+  if (status >= 500) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  return res.status(status).json({ error: error.message || 'Request failed' });
 }

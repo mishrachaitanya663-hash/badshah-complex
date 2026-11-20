@@ -121,9 +121,9 @@ export default function Layout() {
           <div className="footer-col">
             <h3>Browse</h3>
             <Link to="/categories">All categories</Link>
-            <Link to="/categories/snacks">Snacks</Link>
-            <Link to="/categories/beverages">Beverages</Link>
-            <Link to="/categories/personal-care">Personal Care</Link>
+            <Link to="/categories/cement">Cement</Link>
+            <Link to="/categories/sand-aggregates">Sand &amp; Aggregates</Link>
+            <Link to="/categories/tmt-bars-steel">TMT Bars &amp; Steel</Link>
           </div>
 
           <div className="footer-col">

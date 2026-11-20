@@ -5,6 +5,7 @@ export const authRepository = {
   findAdminByUsername: (username) => getDrivers().auth.findAdminByUsername(username),
   findAdminById: (id) => getDrivers().auth.findAdminById(id),
   createAdmin: (data) => getDrivers().auth.createAdmin(data),
+  updateAdminPassword: (id, passwordHash) => getDrivers().auth.updateAdminPassword(id, passwordHash),
   createSession: (data) => getDrivers().auth.createSession(data),
   findSession: (tokenHash) => getDrivers().auth.findSession(tokenHash),
   deleteSession: (tokenHash) => getDrivers().auth.deleteSession(tokenHash),

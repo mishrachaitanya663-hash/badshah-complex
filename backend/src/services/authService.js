@@ -23,14 +23,23 @@ function hashToken(token) {
 }
 
 export async function ensureAdmin() {
-  if ((await authRepository.countAdmins()) > 0) return;
-  await authRepository.createAdmin({
-    id: crypto.randomUUID(),
-    username: config.adminUsername,
-    passwordHash: hashPassword(config.adminPassword),
-    role: 'admin',
-    createdAt: new Date().toISOString(),
-  });
+  const username = config.adminUsername;
+  const admin = await authRepository.findAdminByUsername(username);
+  if (!admin) {
+    await authRepository.createAdmin({
+      id: crypto.randomUUID(),
+      username,
+      passwordHash: hashPassword(config.adminPassword),
+      role: 'admin',
+      createdAt: new Date().toISOString(),
+    });
+    console.log(`[auth] Created admin "${username}" from .env`);
+    return;
+  }
+  if (!verifyPassword(config.adminPassword, admin.passwordHash)) {
+    await authRepository.updateAdminPassword(admin.id, hashPassword(config.adminPassword));
+    console.log(`[auth] Updated admin "${username}" password from .env`);
+  }
 }
 
 export async function login({ username, password }) {

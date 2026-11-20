@@ -156,12 +156,14 @@ test('catalog flow: category, subcategory, product, filters, images and validati
   });
   assert.equal(badProduct.status, 400);
 
-  const missingSubcategory = await api('/api/admin/products', {
+  const categoryOnly = await api('/api/admin/products', {
     method: 'POST',
     ...auth(),
-    body: { name: 'Missing subcategory', pricePaise: 100, stock: 1, unit: 'bag', categoryId },
+    body: { name: 'Category only', pricePaise: 100, stock: 1, unit: 'bag', categoryId },
   });
-  assert.equal(missingSubcategory.status, 400);
+  assert.equal(categoryOnly.status, 201);
+  assert.equal(categoryOnly.body.subcategoryId, null);
+  await api(`/api/admin/products/${categoryOnly.body.id}`, { method: 'DELETE', ...auth() });
 
   const low = await api('/api/admin/products', {
     method: 'POST',

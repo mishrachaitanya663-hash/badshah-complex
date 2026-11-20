@@ -81,7 +81,7 @@ export default function SubcategoryPage() {
         <>
           <div className="category-hero">
             <div className="category-image-placeholder large">
-              <Icon name="grid" size={38} />
+              {subcategory.imageUrl ? <img src={subcategory.imageUrl} alt="" /> : <Icon name="grid" size={38} />}
             </div>
             <div>
               <p className="eyebrow">Subcategory</p>

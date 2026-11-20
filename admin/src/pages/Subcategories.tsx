@@ -5,6 +5,7 @@ import type { Category, Subcategory } from '../types';
 import { ConfirmDialog, ErrorNote, Loading, Toast } from '../components/States';
 import Icon from '../components/Icon';
 import ImagePicker, { type PendingImage } from '../components/ImagePicker';
+import { newId } from '../utils';
 
 type SubcategoryForm = {
   id: string;
@@ -28,7 +29,7 @@ function slugify(value: string): string {
 
 function emptyForm(categoryId = ''): SubcategoryForm {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     categoryId,
     name: '',
     slug: '',
@@ -280,7 +281,7 @@ export function SubcategoriesPage() {
                   <td>{subcategory.productCount}</td>
                   <td>{subcategory.displayOrder}</td>
                   <td>
-                    <span className={subcategory.active ? 'status-pill in' : 'status-pill out'}>
+                    <span className={subcategory.active ? 'status-pill good' : 'status-pill bad'}>
                       {subcategory.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -310,21 +311,21 @@ export function SubcategoriesPage() {
       {drawerOpen && (
         <div className="drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && closeDrawer()}>
           <aside className="editor-drawer" role="dialog" aria-modal="true" aria-label={editingId ? 'Edit subcategory' : 'Add subcategory'}>
-            <div className="drawer-header">
+            <div className="drawer-head">
               <div>
                 <h2>{editingId ? 'Edit subcategory' : 'New subcategory'}</h2>
-                <p className="muted">Every product belongs to one subcategory.</p>
+                <p className="muted">Optional grouping. Products can also sit directly under a category.</p>
               </div>
               <button className="icon-button" type="button" onClick={closeDrawer} aria-label="Close">
                 <Icon name="close" size={18} />
               </button>
             </div>
 
-            <form className="drawer-form" onSubmit={submit}>
+            <form className="drawer-body" id="subcategory-form" onSubmit={submit}>
               {!editingId && (
                 <label className="field">
                   <span>Subcategory ID (UUID)</span>
-                  <input value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} required />
+                  <input value={form.id} enterKeyHint="next" autoCapitalize="none" autoCorrect="off" spellCheck={false} onChange={(event) => setForm({ ...form, id: event.target.value })} required />
                 </label>
               )}
               <label className="field">
@@ -338,12 +339,16 @@ export function SubcategoriesPage() {
               </label>
               <label className="field">
                 <span>Name</span>
-                <input value={form.name} onChange={(event) => changeName(event.target.value)} required />
+                <input value={form.name} enterKeyHint="next" onChange={(event) => changeName(event.target.value)} required />
               </label>
               <label className="field">
                 <span>Slug</span>
                 <input
                   value={form.slug}
+                  enterKeyHint="next"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   onChange={(event) => {
                     setSlugTouched(true);
                     setForm({ ...form, slug: slugify(event.target.value) });
@@ -359,6 +364,8 @@ export function SubcategoriesPage() {
                 <span>Display order</span>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  enterKeyHint="done"
                   min={0}
                   value={form.displayOrder}
                   onChange={(event) => setForm({ ...form, displayOrder: Number(event.target.value) })}
@@ -380,14 +387,14 @@ export function SubcategoriesPage() {
                 <input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} />
                 <span>Active (visible to customers)</span>
               </label>
-
-              <div className="drawer-footer">
-                <button className="button ghost" type="button" onClick={closeDrawer}>Cancel</button>
-                <button className="button primary" type="submit" disabled={saving}>
-                  {saving ? 'Saving.' : editingId ? 'Save changes' : 'Create subcategory'}
-                </button>
-              </div>
             </form>
+
+            <div className="drawer-foot">
+              <button className="button ghost" type="button" onClick={closeDrawer}>Cancel</button>
+              <button className="button primary" type="submit" form="subcategory-form" disabled={saving}>
+                {saving ? 'Saving.' : editingId ? 'Save changes' : 'Create subcategory'}
+              </button>
+            </div>
           </aside>
         </div>
       )}
@@ -401,6 +408,7 @@ export function SubcategoriesPage() {
             : `"${deleteTarget?.name ?? 'This subcategory'}" will be removed. This cannot be undone.`
         }
         confirmLabel="Delete subcategory"
+        confirmDisabled={deleteTarget.productCount > 0 && !moveTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       >

@@ -40,6 +40,10 @@ export default function LoginCard() {
           <input
             required
             autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
@@ -50,6 +54,10 @@ export default function LoginCard() {
             required
             type="password"
             autoComplete="current-password"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="go"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />

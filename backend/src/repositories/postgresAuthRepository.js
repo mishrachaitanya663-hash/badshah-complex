@@ -39,6 +39,11 @@ export async function createAdmin(data) {
   return findAdminById(data.id);
 }
 
+export async function updateAdminPassword(id, passwordHash) {
+  await query('UPDATE admins SET password_hash = $1 WHERE id = $2', [passwordHash, id]);
+  return findAdminById(id);
+}
+
 export async function createSession(data) {
   await query(
     'INSERT INTO admin_sessions (token_hash, admin_id, expires_at, created_at) VALUES ($1, $2, $3, $4)',

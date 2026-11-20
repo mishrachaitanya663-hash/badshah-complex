@@ -68,11 +68,11 @@ async function requireSubcategory(subcategoryId) {
 
 async function assertProductRelations(input, existing = null) {
   const categoryId = input.categoryId ?? existing?.categoryId;
-  const subcategoryId = input.subcategoryId ?? existing?.subcategoryId;
+  const subcategoryId = input.subcategoryId !== undefined ? input.subcategoryId : existing?.subcategoryId;
   if (!categoryId) throw new HttpError(400, 'Category is required');
-  if (!subcategoryId) throw new HttpError(400, 'Subcategory is required');
 
   await requireCategory(categoryId);
+  if (!subcategoryId) return;
   const subcategory = await requireSubcategory(subcategoryId);
   if (subcategory.categoryId !== categoryId) {
     throw new HttpError(400, 'This subcategory does not belong to the selected category');
@@ -187,7 +187,7 @@ export async function createProduct(input) {
     stock: input.stock,
     unit: input.unit ?? '',
     categoryId: input.categoryId,
-    subcategoryId: input.subcategoryId,
+    subcategoryId: input.subcategoryId ?? null,
     active: input.active !== false,
     starPriority: input.starPriority ?? 0,
     createdAt: now,
@@ -197,11 +197,14 @@ export async function createProduct(input) {
 
 export async function updateProduct(id, input) {
   const existing = await getProductById(id);
-  if (input.categoryId !== undefined || input.subcategoryId !== undefined) {
-    await assertProductRelations(input, existing);
+  const patch = { ...input };
+  if (patch.categoryId !== undefined && patch.categoryId !== existing.categoryId && patch.subcategoryId === undefined) {
+    patch.subcategoryId = null;
+  }
+  if (patch.categoryId !== undefined || patch.subcategoryId !== undefined) {
+    await assertProductRelations(patch, existing);
   }
 
-  const patch = { ...input };
   if (patch.name && patch.name !== existing.name) {
     patch.slug = await uniqueSlug(patch.name, productRepository.findBySlug, id);
   }

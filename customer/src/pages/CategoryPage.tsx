@@ -80,13 +80,13 @@ export default function CategoryPage() {
         <>
           <div className="category-hero">
             <div className="category-image-placeholder large">
-              <Icon name="grid" size={38} />
+              {category.imageUrl ? <img src={category.imageUrl} alt="" /> : <Icon name="grid" size={38} />}
             </div>
             <div>
               <p className="eyebrow">Category</p>
               <h1>{category.name}</h1>
-              <p className="muted">{category.description || 'Browse subcategories in this collection.'}</p>
-              <span className="pill"><Icon name="grid" size={13} /> {subcategories.length} subcategories</span>
+              <p className="muted">{category.description || 'Browse products in this collection.'}</p>
+              <span className="pill"><Icon name="products" size={13} /> {category.productCount} products</span>
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function CategoryPage() {
                 {subcategories.map((item) => (
                   <Link key={item.id} className="subcategory-card" to={`/subcategories/${item.slug}`}>
                     <div className="category-image-placeholder small">
-                      <Icon name="grid" size={22} />
+                      {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <Icon name="grid" size={22} />}
                     </div>
                     <span>
                       <strong>{item.name}</strong>
@@ -118,15 +118,17 @@ export default function CategoryPage() {
 
           <div className="results-bar">
             <span className="muted">{products ? `${products.total} products` : 'Loading…'}</span>
-            <label className="sort-select">
-              <span>Subcategory:</span>
-              <select value={subcategory} onChange={(event) => setParam(params, 'subcategory', event.target.value, setParams)}>
-                <option value="">All subcategories</option>
-                {subcategories.map((item) => (
-                  <option key={item.id} value={item.slug}>{item.name}</option>
-                ))}
-              </select>
-            </label>
+            {subcategories.length > 0 && (
+              <label className="sort-select">
+                <span>Subcategory:</span>
+                <select value={subcategory} onChange={(event) => setParam(params, 'subcategory', event.target.value, setParams)}>
+                  <option value="">All subcategories</option>
+                  {subcategories.map((item) => (
+                    <option key={item.id} value={item.slug}>{item.name}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="sort-select">
               <span>Sort:</span>
               <select value={sort} onChange={(event) => setParam(params, 'sort', event.target.value, setParams)}>

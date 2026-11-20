@@ -135,8 +135,8 @@ export default function Home() {
           <p className="eyebrow">Welcome to Badshah Complex</p>
           <h1>Everyday essentials, all in one place.</h1>
           <p className="hero-copy">
-            Explore a carefully organised building-materials catalogue by category and subcategory. Find what you need,
-            compare prices and view details in seconds.
+            Explore a carefully organised building-materials catalogue by category. Find what you need, compare prices
+            and view details in seconds.
           </p>
           <div className="hero-actions">
             <Link className="button primary" to="/products">
@@ -194,12 +194,12 @@ export default function Home() {
               return (
                 <Link key={category.id} className="category-card" to={`/categories/${category.slug}`}>
                   <div className="category-image-placeholder">
-                    <Icon name="grid" size={30} />
+                    {category.imageUrl ? <img src={category.imageUrl} alt="" /> : <Icon name="grid" size={30} />}
                   </div>
                   <div className="category-card-body">
                     <h3>{category.name}</h3>
                     <p className="muted">{category.description || 'Explore this collection.'}</p>
-                    <span className="pill"><Icon name="grid" size={13} /> {children.length} subcategories</span>
+                    <span className="pill"><Icon name="products" size={13} /> {category.productCount} products</span>
                     {children.length > 0 && (
                       <div className="subcategory-chips">
                         {children.slice(0, 4).map((subcategory) => (

@@ -24,10 +24,11 @@ export const productCreateSchema = z.object({
   stock: z.number().int().nonnegative(),
   unit: z.string().trim().min(1).max(40),
   categoryId: z.string().min(1),
-  subcategoryId: z.string().min(1),
+  subcategoryId: z.string().min(1).nullable().optional(),
   active: z.boolean().default(true),
   starPriority: z.number().int().min(0).max(3).default(0),
   images: z.array(z.string()).default([]),
+  imagePublicIds: z.array(imagePublicIdSchema.nullable()).optional(),
 });
 
 export const productUpdateSchema = productCreateSchema.partial();
@@ -90,5 +91,5 @@ export const productQuerySchema = z.object({
   inStock: inStockParam,
   sort: z.enum(['priority', 'newest', 'price-asc', 'price-desc', 'name']).default('priority'),
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(60).default(12),
+  limit: z.coerce.number().int().min(1).max(500).default(12),
 });

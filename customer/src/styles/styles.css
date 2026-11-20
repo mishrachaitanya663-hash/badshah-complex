@@ -688,6 +688,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -1411,6 +1412,10 @@ button {
   .slider-item {
     flex-basis: min(78vw, 280px);
   }
+
+  .login-modal {
+    padding: var(--space-5);
+  }
 }
 
 .category-card-link {
@@ -1426,6 +1431,13 @@ button {
   height: 150px;
   background: linear-gradient(135deg, #efe3d3, #d8c3a5);
   color: var(--brand-dark);
+  overflow: hidden;
+}
+
+.category-image-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .category-image-placeholder.large {
@@ -1532,5 +1544,21 @@ button {
 @media (max-width: 640px) {
   .results-bar label.sort-select + label.sort-select {
     margin-left: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .login-modal .button,
+  .modal-close,
+  .slider-btn,
+  button:not(.link-button) {
+    min-height: 44px;
   }
 }

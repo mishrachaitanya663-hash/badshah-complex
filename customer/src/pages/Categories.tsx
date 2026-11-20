@@ -38,7 +38,7 @@ export default function Categories() {
       <div className="page-heading">
         <p className="eyebrow">Catalogue</p>
         <h1>Categories</h1>
-        <p className="muted">Pick a category, then choose a subcategory to explore its products.</p>
+        <p className="muted">Pick a category to browse its products, or choose a subcategory if one exists.</p>
       </div>
 
       {loading ? (
@@ -53,13 +53,13 @@ export default function Categories() {
               <article className="category-card" key={category.id}>
                 <Link className="category-card-link" to={`/categories/${category.slug}`}>
                   <div className="category-image-placeholder">
-                    <Icon name="grid" size={30} />
+                    {category.imageUrl ? <img src={category.imageUrl} alt="" /> : <Icon name="grid" size={30} />}
                   </div>
                   <div className="category-card-body">
                     <h2>{category.name}</h2>
                     <p className="muted">{category.description || 'Explore this collection.'}</p>
                     <span className="pill">
-                      <Icon name="grid" size={13} /> {children.length} subcategories
+                      <Icon name="products" size={13} /> {category.productCount} products
                     </span>
                   </div>
                 </Link>

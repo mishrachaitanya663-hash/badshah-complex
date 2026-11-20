@@ -20,6 +20,15 @@ const SELECT = `
   LEFT JOIN categories c ON c.id = s.category_id
 `;
 
+const ADMIN_SELECT = `
+  SELECT s.*,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    (SELECT COUNT(*) FROM products p WHERE p.subcategory_id = s.id) AS product_count
+  FROM subcategories s
+  LEFT JOIN categories c ON c.id = s.category_id
+`;
+
 function toSubcategory(row) {
   if (!row) return null;
   return {
@@ -58,7 +67,7 @@ function buildWhere(query = {}) {
 
 export async function listSubcategories(query = {}) {
   const where = buildWhere(query);
-  const sql = `${SELECT}${where.sql} ORDER BY c.display_order ASC, s.display_order ASC, s.name COLLATE NOCASE ASC`;
+  const sql = `${query.includeInactive ? ADMIN_SELECT : SELECT}${where.sql} ORDER BY c.display_order ASC, s.display_order ASC, s.name COLLATE NOCASE ASC`;
   return getDb().prepare(sql).all(...where.params).map(toSubcategory);
 }
 

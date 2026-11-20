@@ -66,8 +66,8 @@ function toInput(product: Product): ProductInput {
     costPaise: product.costPaise,
     stock: product.stock,
     unit: product.unit,
-    categoryId: product.category?.id ?? '',
-    subcategoryId: product.subcategory?.id ?? '',
+    categoryId: product.categoryId,
+    subcategoryId: product.subcategoryId,
     active: product.active,
     starPriority: product.starPriority,
     images: product.images,
@@ -104,7 +104,7 @@ export default function Products() {
         category: filters.category || undefined,
         subcategory: filters.subcategory || undefined,
         sort: filters.sort,
-        limit: 60,
+        limit: 500,
       }),
       api.admin.categories(),
       api.admin.subcategories(),
@@ -182,10 +182,6 @@ export default function Products() {
     }
   }
 
-  function firstSubcategory(categoryId: string): string {
-    return subcategories.find((subcategory) => subcategory.categoryId === categoryId)?.id ?? '';
-  }
-
   function formSubcategoryOptions(): Subcategory[] {
     return subcategories.filter((subcategory) => subcategory.categoryId === form.categoryId);
   }
@@ -201,7 +197,7 @@ export default function Products() {
   function openCreate() {
     const categoryId = categories[0]?.id ?? '';
     setEditingId(null);
-    setForm({ ...emptyProductForm, categoryId, subcategoryId: firstSubcategory(categoryId) });
+    setForm({ ...emptyProductForm, categoryId });
     setPendingImages([]);
     setError('');
     setDrawerOpen(true);
@@ -246,10 +242,6 @@ export default function Products() {
       const pricePaise = Math.round(Number(form.price) * 100);
       const costPaise = form.cost.trim() === '' ? 0 : Math.round(Number(form.cost) * 100);
       const stock = Number(form.stock);
-      if (!form.subcategoryId) {
-        setError('Choose a subcategory for this product.');
-        return;
-      }
       if (!form.unit.trim()) {
         setError('Enter the selling unit, for example bag, kg, tonne or piece.');
         return;
@@ -268,20 +260,22 @@ export default function Products() {
         stock,
         unit: form.unit.trim(),
         categoryId: form.categoryId,
-        subcategoryId: form.subcategoryId,
+        subcategoryId: form.subcategoryId || null,
         active: form.active,
         starPriority: Number(form.starPriority),
         images: savedProductImages(),
       };
 
+      const wasEditing = Boolean(editingId);
       const saved = await run(async () => {
         const result = await api.admin.saveProduct(body, editingId ?? undefined);
+        if (!wasEditing) setEditingId(result.id);
         if (pendingImages.length > 0) {
           const upload = new FormData();
           pendingImages.forEach((image) => upload.append('images', image.file));
           await api.admin.uploadImages(result.id, upload);
         }
-      }, editingId ? 'Product updated.' : 'Product created.');
+      }, wasEditing ? 'Product updated.' : 'Product created.');
 
       if (saved) closeDrawer();
     } finally {
@@ -542,7 +536,7 @@ export default function Products() {
                 <div className="field-row">
                   <label className="field">
                     <span>Product name</span>
-                    <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+                    <input required enterKeyHint="next" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
                   </label>
                   <label className="field">
                     <span>Brand</span>
@@ -557,7 +551,7 @@ export default function Products() {
                       value={form.categoryId}
                       onChange={(event) => {
                         const categoryId = event.target.value;
-                        setForm((current) => ({ ...current, categoryId, subcategoryId: firstSubcategory(categoryId) }));
+                        setForm((current) => ({ ...current, categoryId, subcategoryId: '' }));
                       }}
                     >
                       <option value="">Select…</option>
@@ -567,9 +561,9 @@ export default function Products() {
                     </select>
                   </label>
                   <label className="field">
-                    <span>Subcategory</span>
-                    <select required value={form.subcategoryId} onChange={(event) => setForm({ ...form, subcategoryId: event.target.value })}>
-                      <option value="">Select…</option>
+                    <span>Subcategory (optional)</span>
+                    <select value={form.subcategoryId} onChange={(event) => setForm({ ...form, subcategoryId: event.target.value })}>
+                      <option value="">No subcategory — show in category</option>
                       {formSubcategoryOptions().map((subcategory) => (
                         <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
                       ))}
@@ -587,17 +581,17 @@ export default function Products() {
                 <div className="field-row">
                   <label className="field">
                     <span>Price (₹)</span>
-                    <div className="input-prefix"><span>₹</span><input required type="number" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></div>
+                    <div className="input-prefix"><span>₹</span><input required type="number" inputMode="decimal" enterKeyHint="next" min="0" step="0.01" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></div>
                   </label>
                   <label className="field">
                     <span>Selling unit</span>
-                    <input required value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} placeholder="e.g. bag, kg, tonne, piece" />
+                    <input required enterKeyHint="done" value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} placeholder="e.g. bag, kg, tonne, piece" />
                   </label>
                 </div>
                 <div className="field-row">
                   <label className="field">
                     <span>Cost price / CP (₹)</span>
-                    <div className="input-prefix"><span>₹</span><input type="number" min="0" step="0.01" value={form.cost} onChange={(event) => setForm({ ...form, cost: event.target.value })} /></div>
+                    <div className="input-prefix"><span>₹</span><input type="number" inputMode="decimal" enterKeyHint="next" min="0" step="0.01" value={form.cost} onChange={(event) => setForm({ ...form, cost: event.target.value })} /></div>
                   </label>
                   <label className="field">
                     <span>Profit per unit (₹)</span>
@@ -610,7 +604,7 @@ export default function Products() {
                     <span>Stock quantity</span>
                     <div className="stepper">
                       <button type="button" onClick={() => setForm({ ...form, stock: String(Math.max(0, Number(form.stock) - 1)) })}>−</button>
-                      <input required type="number" min="0" step="1" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} />
+                      <input required type="number" inputMode="numeric" enterKeyHint="done" min="0" step="1" value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} />
                       <button type="button" onClick={() => setForm({ ...form, stock: String(Number(form.stock) + 1) })}>+</button>
                     </div>
                   </label>

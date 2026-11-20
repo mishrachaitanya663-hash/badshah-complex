@@ -5,3 +5,7 @@ export function formatPrice(price: number): string {
 export function toMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong';
 }
+
+export function newId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}

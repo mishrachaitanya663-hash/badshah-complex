@@ -2,7 +2,7 @@
 
 ## Goal
 
-Two separate React + TypeScript panels (private admin + public customer) on one backend and one SQLite database, ready for a future MongoDB swap.
+Two separate React + TypeScript panels (private admin + public customer) on one backend. Local development can use SQLite; production uses PostgreSQL, ready for a future MongoDB swap.
 
 ## Runtime layout
 
@@ -22,8 +22,8 @@ Backend (4000)
         subcategoryRepository / authRepository
                            │
                     db/index.js (DB_DRIVER)
-                           │
-                    db/sqlite.js → local .db
+                       ├─ db/sqlite.js → local .db
+                       └─ db/postgres.js → production DB
 ```
 
 The two panels remain separate source trees. The customer Vite dev server only serves the admin panel's compiled files; it does not merge the applications. Changing admin code requires `cd admin && npm run build`.
@@ -43,11 +43,11 @@ The two panels remain separate source trees. The customer Vite dev server only s
 
 ## Shared data
 
-The catalogue is three separate entities: `Category` → `Subcategory` → `Product`.
+The catalogue is three separate entities: `Category` → optional `Subcategory` → `Product`.
 
 - A main category has many subcategories.
 - A subcategory belongs to exactly one main category.
-- A product belongs to exactly one subcategory and inherits that subcategory's main category.
+- A product belongs to exactly one category; its subcategory is optional. When set, it must belong to the selected category.
 - Products are never shown as categories; each product has its own name, images, description, specifications/description text, price, unit and stock.
 - The seed creates exactly five main categories and their requested subcategories, with zero products. Add real products from the admin panel.
 
@@ -57,6 +57,13 @@ Public queries filter `active = 1`; admin queries can include inactive rows. Bot
 
 Routes and services never issue SQL. The four repository wrappers are selected by `DB_DRIVER` in `db/index.js`. A future Mongo implementation can replace the `sqlite*` modules without changing either UI or the API contract.
 
+## Production topology
+
+- Render hosts the API and PostgreSQL database using `render.yaml`.
+- Vercel hosts the customer and admin builds using their respective `vercel.json` files.
+- Frontends pass their API origin through `VITE_API_BASE`; no production API calls use a bare `/api` path.
+- Cloudinary stores uploaded images; local `/uploads` remains a development fallback.
+
 ## Non-goals for this phase
 
-MongoDB/Atlas, deployment, customer accounts, payments, and changes to the existing retailer/admin application.
+MongoDB/Atlas, customer accounts, payments, and changes to the existing retailer/admin application.

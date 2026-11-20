@@ -17,6 +17,13 @@ const SELECT = `
   FROM categories c
 `;
 
+const ADMIN_SELECT = `
+  SELECT c.*,
+    (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id) AS product_count,
+    (SELECT COUNT(*) FROM subcategories s WHERE s.category_id = c.id) AS subcategory_count
+  FROM categories c
+`;
+
 function toCategory(row) {
   if (!row) return null;
   return {
@@ -42,7 +49,7 @@ function serialize(field, value) {
 }
 
 export async function listCategories({ includeInactive = false } = {}) {
-  const sql = `${SELECT}${includeInactive ? '' : ' WHERE c.active = 1'} ORDER BY c.display_order ASC, c.name COLLATE NOCASE ASC`;
+  const sql = `${includeInactive ? ADMIN_SELECT : SELECT}${includeInactive ? '' : ' WHERE c.active = 1'} ORDER BY c.display_order ASC, c.name COLLATE NOCASE ASC`;
   return getDb().prepare(sql).all().map(toCategory);
 }
 

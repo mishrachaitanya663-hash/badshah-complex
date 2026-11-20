@@ -161,7 +161,7 @@ export default function ImagePicker({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           onChange={(event) => {
             void acceptFiles(Array.from(event.target.files ?? []));
           }}

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { api, clearToken, getToken, setToken } from './client';
+import { api, clearToken, getToken, setToken, TOKEN_CHANGED_EVENT } from './client';
 import type { AdminUser } from '../types';
 
 type AuthState = {
@@ -25,6 +25,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((result) => setAdmin(result.admin))
       .catch(() => clearToken())
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const sync = () => setAdmin((current) => (getToken() ? current : null));
+    window.addEventListener('storage', sync);
+    window.addEventListener(TOKEN_CHANGED_EVENT, sync);
+    return () => {
+      window.removeEventListener('storage', sync);
+      window.removeEventListener(TOKEN_CHANGED_EVENT, sync);
+    };
   }, []);
 
   async function login(username: string, password: string) {
