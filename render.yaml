@@ -3,6 +3,7 @@ services:
     name: badshah-api
     runtime: node
     plan: free
+    region: ohio
     rootDir: backend
     buildCommand: npm ci
     startCommand: npm start
