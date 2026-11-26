@@ -41,7 +41,6 @@ services:
   - type: web
     name: badshah-customer
     runtime: static
-    plan: free
     rootDir: customer
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
@@ -56,7 +55,6 @@ services:
   - type: web
     name: badshah-admin
     runtime: static
-    plan: free
     rootDir: admin
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
