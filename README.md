@@ -120,6 +120,7 @@ Add `--delete-local` only after checking the results. Without Cloudinary credent
 ## Deployment layout
 
 - API, customer and admin: Render blueprint in `render.yaml`, with MongoDB Atlas as the external database.
+- API: `https://badshah-complex.onrender.com/`
 - Customer: `https://badshah-customer.onrender.com/`
 - Admin: `https://badshah-admin.onrender.com/` (served at the site root)
 - Node version: `22.12.0` (root `.nvmrc` and `engines` in every package).
