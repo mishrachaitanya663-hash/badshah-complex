@@ -20,7 +20,7 @@ services:
       - key: MONGODB_DB
         value: badshah_custmer
       - key: CORS_ORIGINS
-        value: https://badshah-customer.onrender.com,https://badshah-admin.onrender.com
+        value: https://badshah-customer.onrender.com,https://badshah-admin.onrender.com,https://badshah-customer-wjjn.onrender.com,https://badshah-admin-wjjn.onrender.com
       - key: ADMIN_USERNAME
         value: chaitanya7068
       - key: ADMIN_PASSWORD
@@ -48,9 +48,9 @@ services:
       - key: NODE_VERSION
         value: 22.12.0
       - key: VITE_API_BASE
-        value: https://badshah-complex.onrender.com
+        value: https://badshah-complex-wjjn.onrender.com
       - key: VITE_ADMIN_URL
-        value: https://badshah-admin.onrender.com/
+        value: https://badshah-admin-wjjn.onrender.com/
 
   - type: web
     name: badshah-admin
@@ -62,6 +62,6 @@ services:
       - key: NODE_VERSION
         value: 22.12.0
       - key: VITE_API_BASE
-        value: https://badshah-complex.onrender.com
+        value: https://badshah-complex-wjjn.onrender.com
       - key: VITE_CUSTOMER_URL
-        value: https://badshah-customer.onrender.com/
+        value: https://badshah-customer-wjjn.onrender.com/
